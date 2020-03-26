@@ -1,21 +1,9 @@
-import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
-import pygame
-import gym
-import sys
-from gym import spaces
-import pygame
-
-
-
 # BALL
 
 import pygame
 import math
 import random
 from random import randint
-import numpy as np
 
 BLACK = (0, 0, 0)
 
