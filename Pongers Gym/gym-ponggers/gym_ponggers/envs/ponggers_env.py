@@ -7,6 +7,7 @@ import pygame
 import math
 import random
 from random import randint
+import numpy as np
 
 # Colour Definitions
 
@@ -350,7 +351,7 @@ class PonggersEnv(gym.Env):
 
     def step(self, actionA):
         self.action_space = spaces.Discrete(self.total_pong_actions)
-        print(actionA)
+        # print(actionA)
         self.ponggers.run(actionA)
 
         """
@@ -361,7 +362,6 @@ class PonggersEnv(gym.Env):
             info
         """
 
-        observation = self.ponggers.get_surface()
         reward = self.reward()
         observation = self.observation()
         return observation, reward, False, ''
@@ -386,4 +386,20 @@ class PonggersEnv(gym.Env):
         return reward
 
     def observation(self):
-        return self.ponggers.get_surface()
+        currentSurface = self.ponggers.get_surface()
+        pixelArray = pygame.PixelArray(currentSurface)
+
+        pixelArraySize = pixelArray.shape
+        rows = pixelArraySize[0]
+        columns = pixelArraySize[1]
+
+
+        greyScaleArray = np.empty(pixelArraySize)
+
+        for i in range(rows):
+            for j in range(columns):
+                greyScaleArray[i][j] = pygame.color.(pixelArray[i][j])
+
+        return greyScaleArray
+
+
