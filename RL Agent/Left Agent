@@ -1,0 +1,19 @@
+# Imports
+
+import gym_ponggers
+import gym
+
+
+# Create Gym Environment
+
+env = gym.make('ponggers-v0')
+obs_space = env.observation_space
+act_space = env.action_space
+
+print("~")
+state = env.reset()
+
+for i in range(0, 5):
+    state, reward, done, _ = env.step(0)
+print(state)
+
