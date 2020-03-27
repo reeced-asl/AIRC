@@ -160,11 +160,12 @@ class Paddle(pygame.sprite.Sprite):
 
 class Ponggers:
 
-    global BLACK
-    global WHITE
-    global RED
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
 
     def __init__(self):
+
         # Set up and initialize window for the game
         pygame.init()
         size = (700, 500)
@@ -344,9 +345,8 @@ class PonggersEnv(gym.Env):
         """
         self.agentA = 0
         self.ponggers = Ponggers()
-        action_space = spaces.Discrete(self.total_pong_actions)
-        observation_space = spaces.Box(low=0, high=255, shape=[self.height, self.width, 3])
-        ...
+        self.action_space = spaces.Discrete(self.total_pong_actions)
+        self.observation_space = spaces.Box(low=0, high=255, shape=[self.height, self.width, 3])
 
     def step(self, actionA):
         self.action_space = spaces.Discrete(self.total_pong_actions)
@@ -386,4 +386,4 @@ class PonggersEnv(gym.Env):
         return reward
 
     def observation(self):
-        return self.ponggers.get_surface()
+        return self.
