@@ -78,8 +78,8 @@ class Ball(pygame.sprite.Sprite):
     def randAngle(self, speed):
         x_comp = random.uniform(math.cos(math.pi / 6), math.cos(math.pi / 3))
         y_comp = random.uniform(math.sin(math.pi / 3), math.sin(math.pi / 6))
-        print(x_comp)
-        print(y_comp)
+        #print(x_comp)
+        #print(y_comp)
         x_rand = randint(1, 2)
         y_rand = randint(1, 2)
         # x
@@ -386,4 +386,4 @@ class PonggersEnv(gym.Env):
         return reward
 
     def observation(self):
-        return self.
+        return self.ponggers.get_surface()
