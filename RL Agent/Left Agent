@@ -1,8 +1,13 @@
 # Imports
 
+from collections import deque
+
 import gym_ponggers
 import gym
 import numpy as np
+import tensorflow as tf
+import tensorboard as tb
+
 
 # Create Gym Environment
 
@@ -11,8 +16,133 @@ obs_space = env.observation_space
 act_space = env.action_space
 
 state = env.reset()
+possibleActionsOneHot = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
-for i in range(0, 1):
-    state, reward, done, _ = env.step(0)
 
-np.set_printoptions(threshold=np.inf)
+# HYPERS
+
+
+# Model Hypers
+
+stateSize = [700, 500, 4]
+actionSize = env.action_space.n
+alpha = 0.00025
+
+# Training Hypers
+totalEpisodes = 50
+maxSteps = 50000
+batchSize = 64
+
+# Epsilon Greedy Parameters
+
+explorationIntialProb = 1
+explorationFinalProb = 0.1
+decay_rate = 0.00001
+
+# Q Learning Hypers
+
+gamma = 0.9
+
+# Memory Hypers
+pretrainLength = batchSize
+memorySize = 1000000
+
+
+# Preprocessing Hypers
+stack_size = 4
+
+
+# Preprocessing Class
+
+stackedFrames = deque([np.zeros((700, 500))])
+
+
+class Preprocessing:
+
+    @staticmethod
+    def greyscaleNormalize(pxArray):
+
+        rows = pxArray.shape[0]
+        columns = pxArray.shape[1]
+        greyscaleArray = np.empty((rows, columns), dtype=float)
+        BW_Mask = pxArray[...] == 255
+        greyscaleArray[BW_Mask] = 1
+        return greyscaleArray
+
+    @staticmethod
+    def stackFrames(stackedFrames, state, isStart):
+        global stack_size
+        if isStart:
+            stackedFrames = deque([np.zeros([700, 500]) for i in range(stack_size)], maxlen=4)
+
+            for k in range(0, 3):
+                stackedFrames.append(state)
+
+        else:
+            stackedFrames.append(state)
+
+        stackedState = np.stack(stackedFrames, axis=2)
+
+        return stackedState
+
+
+# Frame Step Speed Test
+for i in range(0, 5):
+    state, reward, done, _ = env.step(2)
+    state = Preprocessing.greyscaleNormalize(state)
+    np.set_printoptions(threshold=np.inf)
+
+# RL Class Architecture
+
+
+class DQN:
+
+    def __init__(self, state_size, action_size, learning_rate, name='LeftDQN'):
+        self.state_size = state_size
+        self.action_size = action_size
+        self.learning_rate = learning_rate
+
+        with tf.variable_scope(name):
+            self.inputs = tf.placeholder(tf.float32, [None, self.state_size], name="inputs")
+            self.actions = tf.placeholder(tf.float32, [None, self.state_size], name="actions")
+
+            self.targetQ = tf.placeholder(tf.float32, [None], name="targetQ")
+
+            self.conv1 = tf.layers.conv2d(inputs=self.inputs,
+                                          filters=32, kernel_size=[8, 8],
+                                          strides=[4, 4], padding="VALID",
+                                          kernel_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+                                          name="conv1")
+
+            self.conv1_out = tf.nn.elu(self.conv1, name="conv1_out")
+
+            self.conv2 = tf.layers.conv2d(inputs=self.conv1_out,
+                                          filters=64, kernel_size=[4, 4],
+                                          strides=[2, 2], padding="VALID",
+                                          kernel_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+                                          name="conv2")
+
+            self.conv2_out = tf.nn.elu(self.conv2, name="conv2_out")
+
+            self.conv3 = tf.layers.conv2d(inputs=self.conv2_out,
+                                          filters=64, kernel_size=[3, 3],
+                                          strides=[2, 2], padding="VALID",
+                                          kernel_initializer=tf.contrib.layers.xavier_initializer_conv2d(),
+                                          name="conv3")
+
+            self.conv3_out = tf.nn.elu(self.conv3, name="conv3_out")
+
+            self.flatten = tf.contrib.layers.flatten(self.conv3_out)
+
+            self.fullyConnected = tf.layers.dense(inputs= self.flatten,
+                                                  units = 512, activation= tf.nn.elu,
+                                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                                  name="FC1")
+            self.output = tf.layers.dense(inputs=self.fullyConnected,
+                                          kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                          units=self.action_size, activation=None)
+
+            self.Q = tf.reduce_sum(tf.multiply(self.output, self.actions))
+            self.loss = tf.reduce_mean(tf.square(self.targetQ - self.Q))
+
+            self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)

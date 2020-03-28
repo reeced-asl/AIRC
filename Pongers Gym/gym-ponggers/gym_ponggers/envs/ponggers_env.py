@@ -1,13 +1,13 @@
 # Imports
 
-import gym
-import sys
-from gym import spaces
-import pygame
-import math
 import random
+import sys
 from random import randint
-import numpy as np
+
+import gym
+import math
+import pygame
+from gym import spaces
 
 # Colour Definitions
 
@@ -79,8 +79,7 @@ class Ball(pygame.sprite.Sprite):
     def randAngle(self, speed):
         x_comp = random.uniform(math.cos(math.pi / 6), math.cos(math.pi / 3))
         y_comp = random.uniform(math.sin(math.pi / 3), math.sin(math.pi / 6))
-        #print(x_comp)
-        #print(y_comp)
+
         x_rand = randint(1, 2)
         y_rand = randint(1, 2)
         # x
@@ -255,9 +254,9 @@ class Ponggers:
             self.ball.reset(score_mult)
             self.boolean_score = True
         if self.ball.rect.y > 490:
-                self.ball.velocity[1] = -(self.ball.velocity[1])
+            self.ball.velocity[1] = -(self.ball.velocity[1])
         if self.ball.rect.y < 0:
-                self.ball.velocity[1] = -(self.ball.velocity[1])
+            self.ball.velocity[1] = -(self.ball.velocity[1])
 
     def action(self, action):
         for event in pygame.event.get():  # User did something
@@ -379,7 +378,7 @@ class PonggersEnv(gym.Env):
         self.ponggers.close()
 
     def reward(self):
-        if self.ponggers.boolean_score is True:
+        if self.ponggers.boolean_score:
             reward = 1000
         else:
             reward = -1
@@ -387,19 +386,9 @@ class PonggersEnv(gym.Env):
 
     def observation(self):
         currentSurface = self.ponggers.get_surface()
-        pixelArray = pygame.PixelArray(currentSurface)
+        pixelArray = pygame.surfarray.array3d(currentSurface)
+        # print(pygame.PixelArray(currentSurface).shape)
 
-        pixelArraySize = pixelArray.shape
-        rows = pixelArraySize[0]
-        columns = pixelArraySize[1]
-
-
-        greyScaleArray = np.empty(pixelArraySize)
-
-        for i in range(rows):
-            for j in range(columns):
-                greyScaleArray[i][j] = pygame.color.(pixelArray[i][j])
-
-        return greyScaleArray
+        return pixelArray[:, :, 0]
 
 
