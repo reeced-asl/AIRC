@@ -146,3 +146,4 @@ class DQN:
             self.loss = tf.reduce_mean(tf.square(self.targetQ - self.Q))
 
             self.optimizer = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
+

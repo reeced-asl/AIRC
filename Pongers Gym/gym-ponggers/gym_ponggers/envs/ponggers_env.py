@@ -8,6 +8,7 @@ import gym
 import math
 import pygame
 from gym import spaces
+import gym_ponggers
 
 # Colour Definitions
 
@@ -389,6 +390,11 @@ class PonggersEnv(gym.Env):
         pixelArray = pygame.surfarray.array3d(currentSurface)
         # print(pygame.PixelArray(currentSurface).shape)
 
-        return pixelArray[:, :, 0]
+        evalSurf = pygame.surfarray.make_surface(pixelArray)
+
+        return evalSurf
+
+        # return pixelArray[:, :, 0]
+
 
 
