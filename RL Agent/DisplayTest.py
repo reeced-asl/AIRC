@@ -9,7 +9,7 @@ display = pygame.display.set_mode((350, 350))
 env=gym.make('ponggers-v0')
 
 for i in range(0, 100):
-    state, reward, done, _ = env.step(2)
+    state, reward, done, _ = env.step(1)
 
 running = True
 
@@ -18,5 +18,5 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     display.blit(state, (0, 0))
-    pygame.display.update()
+    pygame.display.flip()
 pygame.quit()

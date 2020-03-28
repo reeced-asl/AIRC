@@ -319,10 +319,13 @@ class Ponggers:
         self.all_sprites_list.add(self.paddleA)
         self.all_sprites_list.add(self.paddleB)
         self.all_sprites_list.add(self.ball)
-
-    @staticmethod
-    def get_surface():
-        return pygame.display.get_surface()
+    #
+    # @staticmethod
+    def get_surface(self):
+        # self.screen.fill(BLACK)
+        # self.all_sprites_list.draw(self.screen)
+        self.draw()
+        return self.screen
 
 
 # ENV
@@ -389,9 +392,7 @@ class PonggersEnv(gym.Env):
         currentSurface = self.ponggers.get_surface()
         pixelArray = pygame.surfarray.array3d(currentSurface)
         # print(pygame.PixelArray(currentSurface).shape)
-
         evalSurf = pygame.surfarray.make_surface(pixelArray)
-
         return evalSurf
 
         # return pixelArray[:, :, 0]
