@@ -270,13 +270,13 @@ class Ponggers:
                     pass
         keys = pygame.key.get_pressed()
         paddle_vel = 5
-        if keys[pygame.K_w] or action == 1:
+        if keys[pygame.K_w] or action[0] == 2:
             self.paddleA.moveUp(paddle_vel)
-        if keys[pygame.K_s] or action == 2:
+        if keys[pygame.K_s] or action[0] == 0:
             self.paddleA.moveDown(paddle_vel)
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or action[1] == 5:
             self.paddleB.moveUp(paddle_vel)
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_DOWN] or action[1] == 3:
             self.paddleB.moveDown(paddle_vel)
 
     def display(self):
@@ -334,7 +334,7 @@ class PonggersEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     # up, down, stay
     pong_actions = 3
-    agent_count = 1
+    agent_count = 2
     total_pong_actions = agent_count * pong_actions
     width, height = 750, 500
     size = (width, height)
@@ -391,11 +391,9 @@ class PonggersEnv(gym.Env):
     def observation(self):
         currentSurface = self.ponggers.get_surface()
         pixelArray = pygame.surfarray.array3d(currentSurface)
-        # print(pygame.PixelArray(currentSurface).shape)
         evalSurf = pygame.surfarray.make_surface(pixelArray)
-        return evalSurf
-
-        # return pixelArray[:, :, 0]
+        # return evalSurf
+        return pixelArray[:, :, 0]
 
 
 

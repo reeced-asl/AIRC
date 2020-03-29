@@ -2,10 +2,11 @@ import gym_ponggers
 import gym
 env = gym.make('ponggers-v0')
 env.reset()
+import time
 
 # Take a random action
 
-for _ in range(1000):
+for i in range(1000):
     env.render()
-    env.step(env.action_space.sample()) 
+    env.step([2, 5])
 env.close()
