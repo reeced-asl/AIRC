@@ -39,33 +39,31 @@ def eval_genomes(genomes, config):
             if i == 1:
                 obs, reward, done, info = cur_env.step([1,4])
             else:
-                obs, reward, done, info = cur_env.step([actionA, 4])
+                obs, reward, done, info = cur_env.step([actionA, actionB])
             #to watch :)
             #cur_env.render()
             obs = cur_env.observation()
             print(len(obs))
             listA = agentA.activate(obs)
             listB = agentB.activate(obs)
-
-            bestA = listA[0]
-            placeholder = 0
-            for x in listA:
-                if bestA > x:
-                    bestA = x
-                    actionA = placeholder
-                placeholder = placeholder + 1
-
-            for x in listA:
-                if bestA > x:
-                    bestA = x
-                    actionA = placeholder
-                placeholder = placeholder + 1
+            actionA = getAction(listA, "A")
+            actionB = getAction(listB, "B")
         if bestRewardIndex > temp_best:
             bestRewardIndex = temp_best
         x = x + 2
 
 def getAction(list, agent):
-
+    action = 0
+    best = list[0]
+    if agent == "A":
+        placeholder = 0
+    else:
+        placeholder = 3
+    for x in list:
+        if best > x:
+            best = x
+            action = placeholder
+        placeholder = placeholder + 1
     return action
 
 def run(config_file):
