@@ -198,10 +198,12 @@ class Ponggers:
         # This determines how fast the ball's velocity will increase on each point scored
         self.score_rate = 0.1
         # self.score_mult = self.paddleHits * self.score_rate
-        self.boolean_score = False
+        self.boolean_score_B = False
+        self.boolean_score_A = False
 
     def run(self, action):
-        self.boolean_score = False
+        self.boolean_score_A = False
+        self.boolean_score_B = False
         self.action(action)
         self.all_sprites_list.update()
         self.paddleCollision()
@@ -248,12 +250,12 @@ class Ponggers:
             self.scoreA += 1
             self.paddleHits = 0
             self.ball.reset(score_mult)
-            self.boolean_score = True
+            self.boolean_score_A = True
         if self.ball.rect.x < 0:
             self.scoreB += 1
             self.paddleHits = 0
             self.ball.reset(score_mult)
-            self.boolean_score = True
+            self.boolean_score_B = True
         if self.ball.rect.y > 490:
             self.ball.velocity[1] = -(self.ball.velocity[1])
         if self.ball.rect.y < 0:
@@ -364,7 +366,7 @@ class PonggersEnv(gym.Env):
             done
             info
         """
-
+        #rewardA = 0, rewardB = 1
         reward = self.reward()
         observation = self.observation()
         return observation, reward, False, ''
@@ -382,18 +384,27 @@ class PonggersEnv(gym.Env):
         self.ponggers.close()
 
     def reward(self):
-        if self.ponggers.boolean_score:
-            reward = 1000
+        reward = [0, 0]
+        reward_val = 1000
+        penalty = -1
+        if self.ponggers.boolean_score_A:
+            reward[0] = reward_val
         else:
-            reward = -1
+            reward[0] = penalty
+
+        if self.ponggers.boolean_score_B:
+            reward[1] = reward_val
+        else:
+            reward[1] = penalty
         return reward
 
     def observation(self):
         currentSurface = self.ponggers.get_surface()
         pixelArray = pygame.surfarray.array3d(currentSurface)
         evalSurf = pygame.surfarray.make_surface(pixelArray)
-        # return evalSurf
-        return pixelArray[:, :, 0]
+        #return evalSurf
+        #return pixelArray[:, :, 0]
+        return pixelArray
 
 
 
