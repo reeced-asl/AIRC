@@ -1,4 +1,3 @@
-# Imports
 
 import random
 import sys
@@ -170,7 +169,7 @@ class Ponggers:
         # Set up and initialize window for the game
         pygame.init()
         size = (700, 500)
-        if bool_render:
+        if render:
             self.screen = pygame.display.set_mode(size)
         else:
             self.screen = pygame.Surface(size)
@@ -204,9 +203,6 @@ class Ponggers:
         self.boolean_score_B = False
         self.boolean_score_A = False
 
-        self.paddleAHits = 0
-        self.paddleBHits = 0
-
     def run(self, action):
         self.boolean_score_A = False
         self.boolean_score_B = False
@@ -214,7 +210,7 @@ class Ponggers:
         self.all_sprites_list.update()
         self.paddleCollision()
         self.scoreCheck()
-        self.clock.tick(300)
+        self.clock.tick(60)
         # If x is clicked, close the game
         if pygame.key.get_pressed()[pygame.K_x]:
             self.close()
@@ -229,12 +225,11 @@ class Ponggers:
         yB = self.paddleB.rect.y
         ballY = self.ball.rect.y
         if (yA < ballY < yA + 25) or (yA + 75 < ballY < yA + 100):
-            # print("Hurah")
+            print("Hurah")
             return True
         if (yB < ballY < yB + 25) or (yB + 75 < ballY < yB + 100):
-            # print("Hurah")
+            print("Hurah")
             return True
-        return False
 
     def paddleCollision(self):
         # Once the ball is at a certain velocity, the ball will phase / clip right through the paddle and not register as a hit
@@ -243,31 +238,13 @@ class Ponggers:
         y_proj = self.ball.velocity[1] + self.ball.rect.y
         line = pygame.draw.line(self.screen, self.RED, (self.ball.rect.x, self.ball.rect.y), (x_proj, y_proj), 3)
         # Double collision check
-        # if pygame.sprite.collide_mask(self.ball, self.paddleA) or pygame.sprite.collide_mask(self.ball, self.paddleB) or pygame.Rect.colliderect(line, self.paddleA) or pygame.Rect.colliderect(line, self.paddleB):
-        #     self.paddleHits = self.paddleHits + 1
-        #     score_mult = self.paddleHits * self.score_rate
-        #     if self.checkSpecialHit():
-        #         self.ball.bounceSpecial(score_mult)
-        #     else:
-        #         self.ball.bounce(score_mult)
-
-        if pygame.sprite.collide_mask(self.ball, self.paddleB) or pygame.Rect.colliderect(line, self.paddleB):
+        if pygame.sprite.collide_mask(self.ball, self.paddleA) or pygame.sprite.collide_mask(self.ball, self.paddleB) or pygame.Rect.colliderect(line, self.paddleA) or pygame.Rect.colliderect(line, self.paddleB):
             self.paddleHits = self.paddleHits + 1
             score_mult = self.paddleHits * self.score_rate
             if self.checkSpecialHit():
                 self.ball.bounceSpecial(score_mult)
             else:
                 self.ball.bounce(score_mult)
-            self.paddleBHits = self.paddleBHits + 1
-
-        if pygame.sprite.collide_mask(self.ball, self.paddleA) or pygame.Rect.colliderect(line, self.paddleA):
-            self.paddleHits = self.paddleHits + 1
-            score_mult = self.paddleHits * self.score_rate
-            if self.checkSpecialHit():
-                self.ball.bounceSpecial(score_mult)
-            else:
-                self.ball.bounce(score_mult)
-            self.paddleAHits = self.paddleAHits + 1
 
     def scoreCheck(self):
         score_mult = self.paddleHits * self.score_rate
@@ -357,98 +334,9 @@ class Ponggers:
     def quit_display(self):
         pygame.display.iconify()
 
-    def returnPaddleAHits(self):
-        return self.paddleAHits
 
-    def returnPaddleBHits(self):
-        return self.paddleBHits
-
-# ENV
-
-class PonggersEnv(gym.Env):
-    metadata = {'render.modes': ['human']}
-    # up, down, stay
-    pong_actions = 3
-    agent_count = 2
-    total_pong_actions = agent_count * pong_actions
-    width, height = 700, 500
-    size = (width, height)
-
-    def __init__(self, render=False):
-        """
-        ACTION SPACE -
-            agentA:
-            0 = stay
-            1 = up
-            2 = down
-        """
-        self.agentA = 0
-        # render = False
-        self.ponggers = Ponggers(render)
-        self.action_space = spaces.Discrete(self.total_pong_actions)
-        self.observation_space = spaces.Box(low=0, high=255, shape=[self.height, self.width, 3])
-
-    def step(self, action):
-        self.action_space = spaces.Discrete(self.total_pong_actions)
-        # print(actionA)
-        self.ponggers.run(action)
-
-        """
-        return:
-            observation
-            reward
-            done
-            info
-        """
-        #rewardA = 0, rewardB = 1
-        reward = self.reward()
-        observation = self.observation()
-        return observation, reward, False, ''
-
-    def reset(self):
-        self.action_space = spaces.Discrete(self.total_pong_actions)
-        self.ponggers.reset()
-
-    def render(self, mode='human'):
-        self.action_space = spaces.Discrete(self.total_pong_actions)
-        self.ponggers.display()
-
-    def close(self):
-        self.action_space = spaces.Discrete(self.total_pong_actions)
-        self.ponggers.close()
-
-    def reward(self):
-        reward = [0, 0]
-        reward_val = 1000
-        penalty = -1
-        if self.ponggers.boolean_score_A:
-            reward[0] = reward_val
-        else:
-            reward[0] = penalty
-
-        if self.ponggers.boolean_score_B:
-            reward[1] = reward_val
-        else:
-            reward[1] = penalty
-        return reward
-
-    def observation(self):
-        currentSurface = self.ponggers.get_surface()
-        pixelArray = pygame.surfarray.array3d(currentSurface)
-        evalSurf = pygame.surfarray.make_surface(pixelArray)
-        #return evalSurf
-        #return pixelArray[:, :, 0]
-        return pixelArray
-
-    def stopDisplay(self):
-        self.ponggers.quit_display()
-
-    def getScores(self):
-        return [self.ponggers.scoreA, self.ponggers.scoreB]
-
-    def getPaddleAHits(self):
-        return self.ponggers.paddleAHits
-
-    def getPaddleBHits(self):
-        return self.ponggers.paddleBHits
-
+render = True
+test = Ponggers(render)
+while True:
+    test.run([1,4])
+    test.display()
